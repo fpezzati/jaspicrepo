@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	version="3.1">
+	<context-param>
+		<param-name>resteasy.servlet.mapping.prefix</param-name>
+		<param-value>/services/</param-value>
+	</context-param>
+	<servlet>
+		<servlet-name>generatore-rest-servlet</servlet-name>
+		<servlet-class>
+			org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>generatore-rest-servlet</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>jaspic.jwt</realm-name>
+	</login-config>
+	<!-- Does all the stuff below matters? -->
+<!-- 	<security-constraint> -->
+<!-- 		<web-resource-collection> -->
+<!-- 			<web-resource-name>users</web-resource-name> -->
+<!-- 			<url-pattern>/services/*</url-pattern> -->
+<!-- 		</web-resource-collection> -->
+<!-- 		<auth-constraint> -->
+<!-- 			<role-name>userA</role-name> -->
+<!-- 			<role-name>userB</role-name> -->
+<!-- 			<role-name>userC</role-name> -->
+<!-- 		</auth-constraint> -->
+<!-- 	</security-constraint> -->
+<!-- 	<security-role> -->
+<!-- 		<role-name>userA</role-name> -->
+<!-- 	</security-role> -->
+<!-- 	<security-role> -->
+<!-- 		<role-name>userB</role-name> -->
+<!-- 	</security-role> -->
+<!-- 	<security-role> -->
+<!-- 		<role-name>userC</role-name> -->
+<!-- 	</security-role> -->
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+</web-app>
