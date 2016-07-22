@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Implementa MessageInfo. Attivo il SAM attraverso istanze di questo tipo ?
+ * This is my MessageInfo.
  * 
  * @author Francesco
  *

@@ -20,14 +20,12 @@ public class TokenConfigProvider implements AuthConfigProvider {
 
 	public static final String MESSAGELAYER = "HttpServlet";
 	/**
-	 * Non so che farmene per ora.
+	 * I don't known what to do with this.
 	 */
 	private ServerAuthConfig serverAuthConfig;
 
 	/**
-	 * Le API indicano come obbligatorio fornire un costruttore con questa
-	 * firma. Registro questo provider presso l'oggetto AuthConfigFactory
-	 * ricevuto in input.
+	 * This constructor is mandatory.
 	 * 
 	 * @throws AuthException
 	 */
@@ -38,8 +36,7 @@ public class TokenConfigProvider implements AuthConfigProvider {
 	}
 
 	/**
-	 * Devo mettere la logica di business per recuperare il corretto oggetto
-	 * ServerAuthContex da utilizzare. Ne ho solo uno...
+	 * Here goes how to retreive the right ServerAuthConfig. I got only one...
 	 */
 	public ServerAuthConfig getServerAuthConfig(String layer, String appContext, CallbackHandler handler)
 			throws AuthException {
@@ -47,10 +44,9 @@ public class TokenConfigProvider implements AuthConfigProvider {
 	}
 
 	/**
-	 * Reinizializzare i factory da restituire (credo). Viene mai invocato?
+	 * Reinitialize the factories. Is it ever invoked?
 	 */
 	public void refresh() {
-		// TODO Auto-generated method stub
 
 	}
 

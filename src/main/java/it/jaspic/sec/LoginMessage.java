@@ -7,6 +7,12 @@ import javax.security.auth.message.MessageInfo;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * This is another MessageInfo. I will use this (in a far future for now) to
+ * handle login (username and password) requests.
+ * 
+ * @author Francesco
+ */
 public class LoginMessage implements MessageInfo {
 
 	public static final String LOGINATTRIBUTE = "token";

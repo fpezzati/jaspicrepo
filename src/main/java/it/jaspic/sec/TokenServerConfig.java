@@ -37,8 +37,8 @@ public class TokenServerConfig implements ServerAuthConfig {
 	}
 
 	/**
-	 * Non ho ancora capito cosa sia un messageLayer. Posso ritornare null se
-	 * non sono previsti layer specifici.
+	 * I don't really get what a messageLayer is. I can return null because I
+	 * don't use more than one messageLayer.
 	 */
 	@Override
 	public String getMessageLayer() {
@@ -46,17 +46,22 @@ public class TokenServerConfig implements ServerAuthConfig {
 	}
 
 	/**
-	 * Identificatore per associare un contesto applicativo (?) ad un oggetto
-	 * ServerAuthConfig.
+	 * Should this method return an Id to get the right ServerAuthConfig?
 	 */
 	@Override
 	public String getAppContext() {
-		return null;
+		return TokenSAM.CONTEXTID;
 	}
 
+	/**
+	 * What should this method do? Get the right SAM by messageInfo contextID?
+	 * What if I return null? Trajano says no authentication will be verified.
+	 */
 	@Override
 	public String getAuthContextID(MessageInfo messageInfo) {
-		if (messageInfo instanceof TokenMessage) {
+		if (messageInfo.getMap().containsKey(TokenSAM.IS_MANDATORY)
+				&& Boolean.parseBoolean((String) messageInfo.getMap().get(TokenSAM.IS_MANDATORY))
+				&& messageInfo instanceof TokenMessage) {
 			return ((TokenMessage) messageInfo).getAuthContextID();
 		}
 		return null;
@@ -67,7 +72,7 @@ public class TokenServerConfig implements ServerAuthConfig {
 	}
 
 	/**
-	 * Non ho capito lo scopo di questo metodo.
+	 * I don't get this method's purpose.
 	 */
 	@Override
 	public void refresh() {

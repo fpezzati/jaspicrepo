@@ -11,15 +11,12 @@ import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-
-import it.jaspic.sec.model.UserPrincipal;
 
 public class TokenSAM implements ServerAuthModule {
 
@@ -33,24 +30,20 @@ public class TokenSAM implements ServerAuthModule {
 	@SuppressWarnings("rawtypes")
 	private Class[] supportedMessageType = { ServletRequest.class, ServletResponse.class };
 	private Logger log = Logger.getLogger(this.getClass());
-	private final String IS_MANDATORY = "javax.security.auth.message.MessagePolicy.isMandatory";
+	public static final String IS_MANDATORY = "javax.security.auth.message.MessagePolicy.isMandatory";
 
 	/**
-	 * Richiesto come obbligatorio dalle API.
+	 * This constructor is mandatory.
 	 */
 	public TokenSAM() {
 	}
 
 	/**
-	 * Questo metodo deve incapsulare la logica di verifica delle credenziali
-	 * utente. Il metodo validateRequest viene invocato per ogni chiamata
-	 * rivolta al contesto web del SAM. Quando viene richiesta una risorsa che
-	 * non Ë esplicitamente indicata come protetta, il valore dell'attributo
-	 * "javax.security.auth.message.MessagePolicy.isMandatory" di MessageInfo Ë
-	 * pari a "false". Invece, quando viene richiesta una risorsa protetta, il
-	 * valore dell'attributo
-	 * "javax.security.auth.message.MessagePolicy.isMandatory" di MessageInfo Ë
-	 * pari a "true".
+	 * Here is where requests are validated. When request is about an
+	 * unprotected resource, MessageInfo property
+	 * "javax.security.auth.message.MessagePolicy.isMandatory" is set to
+	 * "false". When request is about a protected resource, the property is set
+	 * to "true".
 	 */
 	@Override
 	public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
@@ -60,19 +53,13 @@ public class TokenSAM implements ServerAuthModule {
 		if (messageInfo.getMap().containsKey(IS_MANDATORY)
 				&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)))) {
 			log.info("request a unprotected resource.");
-			callbacks = new Callback[] { new CallerPrincipalCallback(clientSubject, new UserPrincipal("MARIO")) };
-			return AuthStatus.SEND_SUCCESS;
+			return null;
 		} else {
 			TokenMessage tokenMessage = (TokenMessage) messageInfo;
 			HttpServletRequest httpReq = (HttpServletRequest) tokenMessage.getRequestMessage();
 			log.info("username: " + httpReq.getParameter("username"));
 		}
 		try {
-			// Communicate the details of the authenticated user to the
-			// container. In many
-			// cases the handler will just store the details and the container
-			// will actually handle
-			// the login after we return from this method.
 			callbackHandler.handle(callbacks);
 		} catch (IOException | UnsupportedCallbackException e) {
 			throw (AuthException) new AuthException().initCause(e);
@@ -95,11 +82,6 @@ public class TokenSAM implements ServerAuthModule {
 
 	}
 
-	/**
-	 * Il parametro CallbackHandler serve per gestire le richieste. Analogo a
-	 * JAAS (?). Salvo l'oggetto in un attributo in quanto verr√† usato in
-	 * secureResponse.
-	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler,
@@ -107,9 +89,6 @@ public class TokenSAM implements ServerAuthModule {
 		setCallbackHandler(handler);
 	}
 
-	/**
-	 * Restituisce i tipi di messaggio supportati.
-	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class[] getSupportedMessageTypes() {
