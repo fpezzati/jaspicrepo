@@ -2,7 +2,6 @@ package it.jaspic.web;
 
 import javax.annotation.security.PermitAll;
 import javax.ejb.Stateless;
-import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.config.AuthConfigFactory;
 import javax.servlet.http.HttpServletRequest;
@@ -20,12 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.jaspic.sec.LoginMessage;
-//import it.bytebear.jaas.mongo.service.User;
 import it.jaspic.sec.TokenConfigProvider;
 import it.jaspic.sec.TokenSAM;
 import it.jaspic.sec.TokenServerConfig;
-import it.jaspic.sec.model.PasswordPrincipal;
-import it.jaspic.sec.model.UserPrincipal;
 import it.jaspic.web.model.LoginRequest;
 
 @Path("/user")
@@ -48,12 +44,14 @@ public class UserService {
 			TokenServerConfig tokenServerConfig = (TokenServerConfig) configProvider.getServerAuthConfig(
 					TokenConfigProvider.MESSAGELAYER, httpRequest.getServletContext().getContextPath(), null);
 			LoginMessage loginMessage = new LoginMessage();
-			loginMessage.getMap().put("username", loginRequest.getUsername());
-			loginMessage.getMap().put("password", loginRequest.getPassword());
-			Subject subject = new Subject();
-			subject.getPrincipals().add(new UserPrincipal(loginRequest.getUsername()));
-			subject.getPrincipals().add(new PasswordPrincipal(loginRequest.getPassword()));
-			tokenServerConfig.getAuthContext(TokenSAM.CONTEXTID, subject, null).secureResponse(loginMessage, subject);
+			loginMessage.setUsername(loginRequest.getUsername());
+			loginMessage.setPassword(loginRequest.getPassword());
+			// Subject subject = new Subject();
+			// subject.getPrincipals().add(new
+			// UserPrincipal(loginRequest.getUsername()));
+			// subject.getPrincipals().add(new
+			// PasswordPrincipal(loginRequest.getPassword()));
+			tokenServerConfig.getAuthContext(TokenSAM.CONTEXTID, null, null).validateRequest(loginMessage, null, null);
 
 			if (httpRequest.getUserPrincipal() != null) {
 				return Response.status(Status.OK).entity(httpRequest.getUserPrincipal().getName() + " logged in.")

@@ -1,6 +1,7 @@
 package it.jaspic.sec;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Map;
 
 import javax.security.auth.Subject;
@@ -11,6 +12,7 @@ import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
+import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -50,17 +52,23 @@ public class TokenSAM implements ServerAuthModule {
 			throws AuthException {
 		log.info("validating..");
 		Callback[] callbacks = null;
-		if (messageInfo.getMap().containsKey(IS_MANDATORY)
-				&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)))) {
-			log.info("request a unprotected resource.");
-			return null;
-		} else {
-			TokenMessage tokenMessage = (TokenMessage) messageInfo;
-			HttpServletRequest httpReq = (HttpServletRequest) tokenMessage.getRequestMessage();
-			log.info("username: " + httpReq.getParameter("username"));
-		}
 		try {
-			callbackHandler.handle(callbacks);
+			if (messageInfo.getMap().containsKey(IS_MANDATORY)
+					&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)))) {
+				log.info("request a unprotected resource.");
+				Principal p = new Principal() {
+					@Override
+					public String getName() {
+						return null;
+					}
+				};
+				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p) });
+			} else {
+				TokenMessage tokenMessage = (TokenMessage) messageInfo;
+				HttpServletRequest httpReq = (HttpServletRequest) tokenMessage.getRequestMessage();
+				log.info("username: " + httpReq.getParameter("username"));
+				callbackHandler.handle(callbacks);
+			}
 		} catch (IOException | UnsupportedCallbackException e) {
 			throw (AuthException) new AuthException().initCause(e);
 		}

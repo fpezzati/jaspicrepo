@@ -7,24 +7,14 @@ import javax.security.auth.message.MessageInfo;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * This is another MessageInfo. I will use this (in a far future for now) to
- * handle login (username and password) requests.
- * 
- * @author Francesco
- */
 public class LoginMessage implements MessageInfo {
 
-	public static final String LOGINATTRIBUTE = "token";
 	private HttpServletRequest request;
 	private HttpServletResponse response;
 	private HashMap<String, String> properties;
-	private static final String authContextKey = "authContextID";
 
-	public LoginMessage() {
-		properties = new HashMap<>();
-		setAuthContextID(TokenSAM.CONTEXTID);
-	}
+	private final static String USERNAME = "username";
+	private final static String PASSWORD = "password";
 
 	@Override
 	public Object getRequestMessage() {
@@ -38,28 +28,36 @@ public class LoginMessage implements MessageInfo {
 
 	@Override
 	public void setRequestMessage(Object request) {
-		if (request instanceof HttpServletRequest) {
+		if (request instanceof HttpServletRequest)
 			this.request = (HttpServletRequest) request;
-		}
 	}
 
 	@Override
 	public void setResponseMessage(Object response) {
-		if (response instanceof HttpServletResponse) {
+		if (response instanceof HttpServletResponse)
 			this.response = (HttpServletResponse) response;
-		}
+
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public Map<String, String> getMap() {
+	public Map getMap() {
 		return properties;
 	}
 
-	public String getAuthContextID() {
-		return properties.get(authContextKey);
+	public String getUsername() {
+		return properties.get(USERNAME);
 	}
 
-	public void setAuthContextID(String authContextID) {
-		properties.put(authContextKey, authContextID);
+	public void setUsername(String username) {
+		properties.put(USERNAME, username);
+	}
+
+	public String getPassword() {
+		return properties.get(PASSWORD);
+	}
+
+	public void setPassword(String password) {
+		properties.put(PASSWORD, password);
 	}
 }
