@@ -72,7 +72,7 @@ public class TokenServerConfig implements ServerAuthConfig {
 	}
 
 	/**
-	 * I don't get this method's purpose.
+	 * I don't get purpose of this method.
 	 */
 	@Override
 	public void refresh() {

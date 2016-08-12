@@ -2,8 +2,14 @@ package it.jaspic.web;
 
 import javax.annotation.security.PermitAll;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
+import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.config.AuthConfigFactory;
+import javax.security.auth.message.config.AuthConfigProvider;
+import javax.security.auth.message.config.ServerAuthConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -21,7 +27,8 @@ import org.slf4j.LoggerFactory;
 import it.jaspic.sec.LoginMessage;
 import it.jaspic.sec.TokenConfigProvider;
 import it.jaspic.sec.TokenSAM;
-import it.jaspic.sec.TokenServerConfig;
+import it.jaspic.sec.model.UserPrincipal;
+import it.jaspic.web.conf.TokenSAMInitializer;
 import it.jaspic.web.model.LoginRequest;
 
 @Path("/user")
@@ -30,6 +37,9 @@ public class UserService {
 
 	private Logger log = LoggerFactory.getLogger(UserService.class);
 
+	@Inject
+	private ServletContext servletContext;
+
 	@POST
 	@Path("/login")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -37,22 +47,21 @@ public class UserService {
 	@PermitAll
 	public Response login(@Context HttpServletRequest httpRequest, LoginRequest loginRequest) {
 		try {
-			log.info("Login...");
+			log.info("Login. " + loginRequest);
 
-			TokenConfigProvider configProvider = (TokenConfigProvider) AuthConfigFactory.getFactory().getConfigProvider(
-					TokenConfigProvider.MESSAGELAYER, httpRequest.getServletContext().getContextPath(), null);
-			TokenServerConfig tokenServerConfig = (TokenServerConfig) configProvider.getServerAuthConfig(
-					TokenConfigProvider.MESSAGELAYER, httpRequest.getServletContext().getContextPath(), null);
+			AuthConfigProvider authConfigProvider = AuthConfigFactory.getFactory().getConfigProvider(
+					TokenConfigProvider.MESSAGELAYER, TokenSAMInitializer.getAppContextID(servletContext), null);
+			ServerAuthConfig serverAuthConfig = authConfigProvider.getServerAuthConfig(TokenConfigProvider.MESSAGELAYER,
+					TokenSAMInitializer.getAppContextID(servletContext), null);
+
 			LoginMessage loginMessage = new LoginMessage();
 			loginMessage.setUsername(loginRequest.getUsername());
 			loginMessage.setPassword(loginRequest.getPassword());
-			// Subject subject = new Subject();
-			// subject.getPrincipals().add(new
-			// UserPrincipal(loginRequest.getUsername()));
-			// subject.getPrincipals().add(new
-			// PasswordPrincipal(loginRequest.getPassword()));
-			tokenServerConfig.getAuthContext(TokenSAM.CONTEXTID, null, null).validateRequest(loginMessage, null, null);
 
+			Subject subject = new Subject();
+			subject.getPrincipals().add(new UserPrincipal(loginRequest.getUsername()));
+			AuthStatus authStatus = serverAuthConfig.getAuthContext(TokenSAM.CONTEXTID, subject, null)
+					.validateRequest(loginMessage, subject, null);
 			if (httpRequest.getUserPrincipal() != null) {
 				return Response.status(Status.OK).entity(httpRequest.getUserPrincipal().getName() + " logged in.")
 						.type(MediaType.APPLICATION_JSON_TYPE).build();

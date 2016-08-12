@@ -13,6 +13,7 @@ import javax.security.auth.message.AuthStatus;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.MessagePolicy;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
+import javax.security.auth.message.callback.GroupPrincipalCallback;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -20,10 +21,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import it.jaspic.sec.model.UserPrincipal;
+
 public class TokenSAM implements ServerAuthModule {
 
 	public static final String CONTEXTID = "jaspic.jwt";
-
 	private CallbackHandler callbackHandler;
 	/**
 	 * I tipi di messaggio supportati da questo SAM. Voglio che gestisca le
@@ -55,19 +57,20 @@ public class TokenSAM implements ServerAuthModule {
 		try {
 			if (messageInfo.getMap().containsKey(IS_MANDATORY)
 					&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)))) {
-				log.info("request a unprotected resource.");
-				Principal p = new Principal() {
-					@Override
-					public String getName() {
-						return null;
-					}
-				};
+				Principal p = getAnonymousPrincipal(messageInfo);
 				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p) });
 			} else {
-				TokenMessage tokenMessage = (TokenMessage) messageInfo;
-				HttpServletRequest httpReq = (HttpServletRequest) tokenMessage.getRequestMessage();
-				log.info("username: " + httpReq.getParameter("username"));
-				callbackHandler.handle(callbacks);
+				if (messageInfo instanceof LoginMessage) {
+					Principal p = getRegisteredUser((LoginMessage) messageInfo);
+					String[] roles = getPrincipalRoles(p);
+					callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p),
+							new GroupPrincipalCallback(clientSubject, roles) });
+				} else {
+					TokenMessage tokenMessage = (TokenMessage) messageInfo;
+					HttpServletRequest httpReq = (HttpServletRequest) tokenMessage.getRequestMessage();
+					log.info("username: " + httpReq.getParameter("username"));
+					callbackHandler.handle(callbacks);
+				}
 			}
 		} catch (IOException | UnsupportedCallbackException e) {
 			throw (AuthException) new AuthException().initCause(e);
@@ -75,9 +78,27 @@ public class TokenSAM implements ServerAuthModule {
 		return AuthStatus.SUCCESS;
 	}
 
+	private UserPrincipal getAnonymousPrincipal(MessageInfo message) {
+		log.info("request a unprotected resource.");
+		return new UserPrincipal(null);
+	}
+
+	private UserPrincipal getRegisteredUser(LoginMessage loginMessage) throws AuthException {
+		if ("userA".equals(loginMessage.getUsername()) && "Aresu".equals(loginMessage.getPassword())) {
+			return new UserPrincipal("userA");
+		}
+		throw new AuthException("No user found!");
+	}
+
+	private String[] getPrincipalRoles(Principal p) throws AuthException {
+		if ("userA".equals(p.getName())) {
+			return new String[] { "userA" };
+		}
+		throw new AuthException("No roles found!");
+	}
+
 	/**
-	 * Non è chiaro a cosa serva questo metodo. Diversi AS ne fanno un diverso
-	 * uso.
+	 * I don't known what to do with this method.
 	 */
 	@Override
 	public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {

@@ -16,6 +16,10 @@ public class LoginMessage implements MessageInfo {
 	private final static String USERNAME = "username";
 	private final static String PASSWORD = "password";
 
+	public LoginMessage() {
+		properties = new HashMap<>();
+	}
+
 	@Override
 	public Object getRequestMessage() {
 		return request;

@@ -23,4 +23,9 @@ public class LoginRequest implements Serializable {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	@Override
+	public String toString() {
+		return "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
+	}
 }
