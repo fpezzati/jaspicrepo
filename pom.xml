@@ -11,8 +11,8 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<resteasy.version>3.0.12.Final</resteasy.version>
-		<jwt.version>2.1.0</jwt.version>
 		<wildfly.plugin>1.0.2.Final</wildfly.plugin>
+		<jsonwebtoken>0.6.0</jsonwebtoken>
 	</properties>
 
 	<dependencies>
@@ -94,6 +94,12 @@
 			<groupId>org.wildfly.plugins</groupId>
 			<artifactId>wildfly-maven-plugin</artifactId>
 			<version>${wildfly.plugin}</version>
+		</dependency>
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>${jsonwebtoken}</version>
 		</dependency>
 		<!-- TEST ONLY -->
 		<dependency>

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -22,19 +23,27 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import it.jaspic.sec.model.UserPrincipal;
+import it.jaspic.web.auth.AuthService;
+import it.jaspic.web.auth.JWTTokenProvider;
 
 public class TokenSAM implements ServerAuthModule {
 
-	public static final String CONTEXTID = "jaspic.jwt";
-	private CallbackHandler callbackHandler;
 	/**
-	 * I tipi di messaggio supportati da questo SAM. Voglio che gestisca le
-	 * chiamate HTTP.
+	 * SAM's supported messages. It will handle HTTP calls.
 	 */
 	@SuppressWarnings("rawtypes")
 	private Class[] supportedMessageType = { ServletRequest.class, ServletResponse.class };
+	private CallbackHandler callbackHandler;
 	private Logger log = Logger.getLogger(this.getClass());
+
+	@Inject
+	private AuthService authService;
+	@Inject
+	private JWTTokenProvider jWTTokenProvider;
+
+	public static final String CONTEXTID = "jaspic.jwt";
 	public static final String IS_MANDATORY = "javax.security.auth.message.MessagePolicy.isMandatory";
+	public static final String IS_LOGIN = "login";
 
 	/**
 	 * This constructor is mandatory.
@@ -53,24 +62,19 @@ public class TokenSAM implements ServerAuthModule {
 	public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
 			throws AuthException {
 		log.info("validating..");
-		Callback[] callbacks = null;
 		try {
-			if (messageInfo.getMap().containsKey(IS_MANDATORY)
-					&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)))) {
+			if (isUnprotectedResourceRequest(messageInfo)) {
 				Principal p = getAnonymousPrincipal(messageInfo);
 				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p) });
 			} else {
-				if (messageInfo instanceof LoginMessage) {
-					Principal p = getRegisteredUser((LoginMessage) messageInfo);
-					String[] roles = getPrincipalRoles(p);
-					callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p),
-							new GroupPrincipalCallback(clientSubject, roles) });
-				} else {
-					TokenMessage tokenMessage = (TokenMessage) messageInfo;
-					HttpServletRequest httpReq = (HttpServletRequest) tokenMessage.getRequestMessage();
-					log.info("username: " + httpReq.getParameter("username"));
-					callbackHandler.handle(callbacks);
-				}
+
+				// TokenMessage tokenMessage = (TokenMessage) messageInfo;
+
+				Principal p = getRegisteredUser(messageInfo);
+				String[] roles = getPrincipalRoles(p);
+				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p),
+						new GroupPrincipalCallback(clientSubject, roles) });
+				log.info("username: " + p.getName());
 			}
 		} catch (IOException | UnsupportedCallbackException e) {
 			throw (AuthException) new AuthException().initCause(e);
@@ -78,16 +82,21 @@ public class TokenSAM implements ServerAuthModule {
 		return AuthStatus.SUCCESS;
 	}
 
+	private boolean isUnprotectedResourceRequest(MessageInfo messageInfo) {
+		return messageInfo.getMap().containsKey(IS_MANDATORY)
+				&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)));
+	}
+
 	private UserPrincipal getAnonymousPrincipal(MessageInfo message) {
 		log.info("request a unprotected resource.");
 		return new UserPrincipal(null);
 	}
 
-	private UserPrincipal getRegisteredUser(LoginMessage loginMessage) throws AuthException {
-		if ("userA".equals(loginMessage.getUsername()) && "Aresu".equals(loginMessage.getPassword())) {
-			return new UserPrincipal("userA");
-		}
-		throw new AuthException("No user found!");
+	private UserPrincipal getRegisteredUser(MessageInfo message) throws AuthException {
+		String token = ((HttpServletRequest) message.getRequestMessage()).getHeader("Bearer");
+		jWTTokenProvider.parseToken(token);
+		// TODO retreive the user claim and check if it's registered.
+		return new UserPrincipal("userA");
 	}
 
 	private String[] getPrincipalRoles(Principal p) throws AuthException {
@@ -105,6 +114,9 @@ public class TokenSAM implements ServerAuthModule {
 		return AuthStatus.SEND_SUCCESS;
 	}
 
+	/**
+	 * What is this? Maybe to logout a subject?
+	 */
 	@Override
 	public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
 		// TODO Auto-generated method stub

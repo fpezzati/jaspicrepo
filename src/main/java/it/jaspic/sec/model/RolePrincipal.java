@@ -4,10 +4,15 @@ import java.security.Principal;
 
 public class RolePrincipal implements Principal {
 
+	private String role;
+
+	public RolePrincipal(String role) {
+		this.role = role;
+	}
+
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return role;
 	}
 
 }

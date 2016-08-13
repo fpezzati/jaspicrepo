@@ -53,7 +53,7 @@ public class TokenSAMInitializer implements ServletContextListener {
 		AuthConfigFactory authConfFactory = AuthConfigFactory.getFactory();
 		Map<String, String> properties = new HashMap<String, String>();
 		/**
-		 * HttpServlet valore obbligatorio per utilizzare JASPIC con Servlet.
+		 * HttpServlet mandatory value to use JASPIC with Servlet.
 		 */
 		authConfFactory.registerConfigProvider(new TokenConfigProvider(properties, authConfFactory), "HttpServlet",
 				getAppContextID(context), "Default single SAM authentication config provider");
