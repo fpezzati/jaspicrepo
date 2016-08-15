@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 import it.jaspic.sec.model.UserPrincipal;
 import it.jaspic.web.auth.AuthService;
 import it.jaspic.web.auth.JWTTokenProvider;
+import it.jaspic.web.auth.TestAuthService;
 
 public class TokenSAM implements ServerAuthModule {
-
 	/**
 	 * SAM's supported messages. It will handle HTTP calls.
 	 */
@@ -49,6 +49,13 @@ public class TokenSAM implements ServerAuthModule {
 	 * This constructor is mandatory.
 	 */
 	public TokenSAM() {
+		/**
+		 * CDI does not seem to work on this. I tried by injecting SAM, which it
+		 * works, as ApplicationScoped but beans does not get instantiated. They
+		 * are always null. I will dig deeper on this.
+		 */
+		authService = new TestAuthService();
+		jWTTokenProvider = new JWTTokenProvider();
 	}
 
 	/**
@@ -67,9 +74,6 @@ public class TokenSAM implements ServerAuthModule {
 				Principal p = getAnonymousPrincipal(messageInfo);
 				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p) });
 			} else {
-
-				// TokenMessage tokenMessage = (TokenMessage) messageInfo;
-
 				Principal p = getRegisteredUser(messageInfo);
 				String[] roles = getPrincipalRoles(p);
 				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p),
@@ -93,10 +97,11 @@ public class TokenSAM implements ServerAuthModule {
 	}
 
 	private UserPrincipal getRegisteredUser(MessageInfo message) throws AuthException {
-		String token = ((HttpServletRequest) message.getRequestMessage()).getHeader("Bearer");
-		jWTTokenProvider.parseToken(token);
-		// TODO retreive the user claim and check if it's registered.
-		return new UserPrincipal("userA");
+		log.info(((HttpServletRequest) message.getRequestMessage()));
+		String token = ((HttpServletRequest) message.getRequestMessage()).getHeader("Authorization");
+		token = token.split(" ")[1];
+		Map<String, Object> claimSet = jWTTokenProvider.parseToken(token);
+		return new UserPrincipal((String) claimSet.get("sub"));
 	}
 
 	private String[] getPrincipalRoles(Principal p) throws AuthException {

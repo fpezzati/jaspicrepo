@@ -25,26 +25,29 @@
 		<realm-name>jaspic.jwt</realm-name>
 	</login-config>
 	<!-- Does all the stuff below matters? -->
-<!-- 	<security-constraint> -->
-<!-- 		<web-resource-collection> -->
-<!-- 			<web-resource-name>users</web-resource-name> -->
-<!-- 			<url-pattern>/services/*</url-pattern> -->
-<!-- 		</web-resource-collection> -->
-<!-- 		<auth-constraint> -->
-<!-- 			<role-name>userA</role-name> -->
-<!-- 			<role-name>userB</role-name> -->
-<!-- 			<role-name>userC</role-name> -->
-<!-- 		</auth-constraint> -->
-<!-- 	</security-constraint> -->
-<!-- 	<security-role> -->
-<!-- 		<role-name>userA</role-name> -->
-<!-- 	</security-role> -->
-<!-- 	<security-role> -->
-<!-- 		<role-name>userB</role-name> -->
-<!-- 	</security-role> -->
-<!-- 	<security-role> -->
-<!-- 		<role-name>userC</role-name> -->
-<!-- 	</security-role> -->
+	<!-- Maybe. Activating RESTEASY security does not resolv the issue. -->
+	<!-- Rolesallowed annotation is an EJB annotation and it is not enought I must specify web constraint. -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>users</web-resource-name>
+			<url-pattern>/services/user/userA</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>userA</role-name>
+			<role-name>userB</role-name>
+			<role-name>userC</role-name>
+		</auth-constraint>
+	</security-constraint>
+	<security-role>
+		<role-name>userA</role-name>
+	</security-role>
+	<security-role>
+		<role-name>userB</role-name>
+	</security-role>
+	<security-role>
+		<role-name>userC</role-name>
+	</security-role>
+	
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>

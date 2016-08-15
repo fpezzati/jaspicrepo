@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
@@ -23,6 +24,9 @@ import it.jaspic.sec.TokenSAM;
 @WebListener
 public class TokenSAMInitializer implements ServletContextListener {
 
+	@Inject
+	private TokenSAM tokenAuthModule;
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
@@ -36,7 +40,7 @@ public class TokenSAMInitializer implements ServletContextListener {
 					throw new UnsupportedCallbackException(callbacks[0]);
 				}
 			};
-			TokenSAM tokenAuthModule = new TokenSAM();
+			// TokenSAM tokenAuthModule = new TokenSAM();
 			tokenAuthModule.initialize(null, null, callbackHandler, null);
 			registerSAM(sce.getServletContext(), tokenAuthModule);
 		} catch (AuthException e) {

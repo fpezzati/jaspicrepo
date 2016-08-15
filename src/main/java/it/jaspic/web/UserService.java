@@ -1,6 +1,8 @@
 package it.jaspic.web;
 
+import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -25,12 +27,10 @@ import it.jaspic.web.model.LoginResponse;
 
 @Path("/user")
 @Stateless
+@DeclareRoles({ "userA", "userB", "userC" })
 public class UserService {
 
 	private Logger log = LoggerFactory.getLogger(UserService.class);
-
-	// @Inject
-	// private ServletContext servletContext;
 
 	@Inject
 	private AuthService authService;
@@ -43,32 +43,7 @@ public class UserService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@PermitAll
 	public Response login(@Context HttpServletRequest httpRequest, LoginRequest loginRequest) {
-		// try {
 		log.info("Login. " + loginRequest);
-
-		// AuthConfigProvider authConfigProvider =
-		// AuthConfigFactory.getFactory().getConfigProvider(
-		// TokenConfigProvider.MESSAGELAYER,
-		// TokenSAMInitializer.getAppContextID(servletContext), null);
-		// ServerAuthConfig serverAuthConfig =
-		// authConfigProvider.getServerAuthConfig(TokenConfigProvider.MESSAGELAYER,
-		// TokenSAMInitializer.getAppContextID(servletContext), null);
-		//
-		// /**
-		// * It does not work. I guess because the SAM is a HttpServlet one.
-		// */
-		// LoginMessage loginMessage = new LoginMessage();
-		// loginMessage.setUsername(loginRequest.getUsername());
-		// loginMessage.setPassword(loginRequest.getPassword());
-		//
-		// Subject subject = new Subject();
-		// subject.getPrincipals().add(new
-		// UserPrincipal(loginRequest.getUsername()));
-		// AuthStatus authStatus =
-		// serverAuthConfig.getAuthContext(TokenSAM.CONTEXTID, subject,
-		// null)
-		// .validateRequest(loginMessage, subject, null);
-
 		UserPrincipal user = authService.getUser(loginRequest);
 		if (user != null) {
 			LoginResponse loginResponse = new LoginResponse();
@@ -79,13 +54,6 @@ public class UserService {
 			return Response.status(Status.NOT_IMPLEMENTED).entity("user not logged in.")
 					.type(MediaType.APPLICATION_JSON_TYPE).build();
 		}
-		// } catch (AuthException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// return
-		// Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).type(MediaType.APPLICATION_JSON_TYPE)
-		// .build();
-		// }
 	}
 
 	@POST
@@ -97,8 +65,8 @@ public class UserService {
 
 	@GET
 	@Path("/userA")
-	// @Secured(Roles.UserA)
-	@Produces(MediaType.TEXT_HTML)
+	@RolesAllowed("userA")
+	@Produces(MediaType.APPLICATION_JSON)
 	public String postUserA() {
 		log.info("userA invoked.");
 		return "You're user A.";
@@ -106,8 +74,8 @@ public class UserService {
 
 	@GET
 	@Path("/userB")
-	// @Secured(Roles.UserB)
-	@Produces(MediaType.TEXT_HTML)
+	@RolesAllowed("userB")
+	@Produces(MediaType.APPLICATION_JSON)
 	public String postUserB() {
 		log.info("userB invoked.");
 		return "You're user B.";
@@ -115,8 +83,8 @@ public class UserService {
 
 	@GET
 	@Path("/userC")
-	// @Secured(Roles.UserC)
-	@Produces(MediaType.TEXT_HTML)
+	@RolesAllowed("userC")
+	@Produces(MediaType.APPLICATION_JSON)
 	public String postUserC() {
 		log.info("userC invoked.");
 		return "You're user C.";
