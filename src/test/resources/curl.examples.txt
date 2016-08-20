@@ -1,3 +1,3 @@
 curl -H "Content-Type: application/json" -X POST -d '{"username":"xxx","password":"xxx"}' http://localhost:8080/JaspicWeb/services/user/login
 
-curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NzEzODM2NzEsInN1YiI6InVzZXJBIn0.UKQXNLYkiZhcd0Gt-NofsCnp3wHLJcZ2Wj5wNLnR4GM" -H "Content-Type: application/json" -X GET http://localhost:8080/JaspicWeb/services/user/userA
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NzE4MTk3OTIsInN1YiI6InVzZXJBIn0.NMiAtDoCEdReIzvSWF4RmSBq94QjyJ0fmifxzd_4-x4" -H "Accept: application/json" -X GET http://localhost:8080/JaspicWeb/services/user/userA

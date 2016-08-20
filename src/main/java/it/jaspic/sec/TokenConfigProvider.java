@@ -9,6 +9,9 @@ import javax.security.auth.message.config.AuthConfigProvider;
 import javax.security.auth.message.config.ClientAuthConfig;
 import javax.security.auth.message.config.ServerAuthConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Factory per recuperare un'istanza di ServerAuthConfig e operare le
  * validazioni.
@@ -19,10 +22,7 @@ import javax.security.auth.message.config.ServerAuthConfig;
 public class TokenConfigProvider implements AuthConfigProvider {
 
 	public static final String MESSAGELAYER = "HttpServlet";
-	/**
-	 * I don't known what to do with this.
-	 */
-	private ServerAuthConfig serverAuthConfig;
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * This constructor is mandatory.
@@ -32,7 +32,6 @@ public class TokenConfigProvider implements AuthConfigProvider {
 	public TokenConfigProvider(Map<String, String> properties, AuthConfigFactory factory) throws AuthException {
 		factory.registerConfigProvider(this, /* String layer */null,
 				/* String appContext */null, /* String description */null);
-		serverAuthConfig = new TokenServerConfig();
 	}
 
 	/**
@@ -40,7 +39,8 @@ public class TokenConfigProvider implements AuthConfigProvider {
 	 */
 	public ServerAuthConfig getServerAuthConfig(String layer, String appContext, CallbackHandler handler)
 			throws AuthException {
-		return serverAuthConfig;
+		log.info("getting a ServerAuthConfig instance.");
+		return new TokenServerConfig(handler);
 	}
 
 	/**

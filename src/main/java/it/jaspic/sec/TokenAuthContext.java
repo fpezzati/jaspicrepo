@@ -26,13 +26,7 @@ public class TokenAuthContext implements ServerAuthContext {
 	@Override
 	public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject)
 			throws AuthException {
-		// if (messageInfo.getMap().containsKey(TokenSAM.IS_MANDATORY)
-		// && Boolean.parseBoolean((String)
-		// messageInfo.getMap().get(TokenSAM.IS_MANDATORY))) {
 		return tokenAuthModule.validateRequest(messageInfo, clientSubject, serviceSubject);
-		// } else {
-		// return null;
-		// }
 	}
 
 	@Override

@@ -71,12 +71,12 @@ public class TokenSAM implements ServerAuthModule {
 		log.info("validating..");
 		try {
 			if (isUnprotectedResourceRequest(messageInfo)) {
-				Principal p = getAnonymousPrincipal(messageInfo);
-				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p) });
+				log.info("request a unprotected resource.");
+				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, (Principal) null) });
 			} else {
 				Principal p = getRegisteredUser(messageInfo);
 				String[] roles = getPrincipalRoles(p);
-				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p),
+				callbackHandler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, p.getName()),
 						new GroupPrincipalCallback(clientSubject, roles) });
 				log.info("username: " + p.getName());
 			}
@@ -89,11 +89,6 @@ public class TokenSAM implements ServerAuthModule {
 	private boolean isUnprotectedResourceRequest(MessageInfo messageInfo) {
 		return messageInfo.getMap().containsKey(IS_MANDATORY)
 				&& !(Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY)));
-	}
-
-	private UserPrincipal getAnonymousPrincipal(MessageInfo message) {
-		log.info("request a unprotected resource.");
-		return new UserPrincipal(null);
 	}
 
 	private UserPrincipal getRegisteredUser(MessageInfo message) throws AuthException {

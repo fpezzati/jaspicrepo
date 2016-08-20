@@ -1,39 +1,27 @@
 package it.jaspic.sec;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.MessageInfo;
 import javax.security.auth.message.config.ServerAuthConfig;
 import javax.security.auth.message.config.ServerAuthContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TokenServerConfig implements ServerAuthConfig {
 
 	private CallbackHandler handler;
-	private Map<String, ServerAuthContext> context;
-	private final String tokenKey = "tokenContext";
-	private final Logger log = Logger.getLogger(this.getClass());
+	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public TokenServerConfig() throws AuthException {
-		context = new HashMap<>();
-		handler = new CallbackHandler() {
-			@Override
-			public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-				log.info("CallbackHandler is handling:");
-				for (Callback callback : callbacks) {
-					log.info("Callback: " + callback.toString());
-				}
-			}
-		};
-		context.put(tokenKey, new TokenAuthContext(handler));
+	}
+
+	public TokenServerConfig(CallbackHandler handler) {
+		this.handler = handler;
 	}
 
 	/**
@@ -59,6 +47,7 @@ public class TokenServerConfig implements ServerAuthConfig {
 	 */
 	@Override
 	public String getAuthContextID(MessageInfo messageInfo) {
+		log.info("getAuthContextID. MessageInfo: " + messageInfo);
 		if (messageInfo.getMap().containsKey(TokenSAM.IS_MANDATORY)
 				&& Boolean.parseBoolean((String) messageInfo.getMap().get(TokenSAM.IS_MANDATORY))
 				&& messageInfo instanceof TokenMessage) {
@@ -68,6 +57,7 @@ public class TokenServerConfig implements ServerAuthConfig {
 	}
 
 	public String getAuthContextID(TokenMessage messageInfo) {
+		log.info("getAuthContextID. TokenMessage: " + messageInfo);
 		return messageInfo.getAuthContextID();
 	}
 
@@ -85,25 +75,18 @@ public class TokenServerConfig implements ServerAuthConfig {
 	}
 
 	/**
+	 * The runtime invoke this method to get a SAM instance.
+	 * 
 	 * @param authContextID
-	 *            identificativo che posso associare ad un ServerAuthContext (?)
-	 *            Mi arriva sempre nullo per ora. Devo capire il motivo.
 	 * @param serviceSubject
-	 *            ???
 	 * @param properties
-	 *            ???
 	 */
 	@Override
 	public ServerAuthContext getAuthContext(String authContextID, Subject serviceSubject,
 			@SuppressWarnings("rawtypes") Map properties) throws AuthException {
-		// if (!context.containsKey(authContextID))
-		// throw new AuthException("No context found.");
-		// return context.get(authContextID);
-		/**
-		 * Non capisco come faccio a passare authContextID quando faccio una
-		 * chiamata http ad uno degli endpoint rest.
-		 */
+		log.info("getAuthContext. authContextID: " + authContextID + ", serviceSubject: " + serviceSubject
+				+ ", properties: " + properties);
+		log.info("TokenAuthContext will be instantiated with this CallbackHandler: " + handler.getClass().getName());
 		return new TokenAuthContext(handler);
 	}
-
 }

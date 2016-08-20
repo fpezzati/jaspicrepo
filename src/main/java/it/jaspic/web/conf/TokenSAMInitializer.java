@@ -16,7 +16,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import org.jboss.sasl.callback.TokenCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import it.jaspic.sec.TokenConfigProvider;
 import it.jaspic.sec.TokenSAM;
@@ -27,20 +28,22 @@ public class TokenSAMInitializer implements ServletContextListener {
 	@Inject
 	private TokenSAM tokenAuthModule;
 
+	public static final String RUNTIMECALLBACKHANDLER = "authconfigprovider.client.callbackhandler";
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
+			// CallbackHandler callbackHandler = (CallbackHandler)
+			// getClass().getClassLoader()
+			// .loadClass(System.getProperty(RUNTIMECALLBACKHANDLER)).newInstance();
 			CallbackHandler callbackHandler = new CallbackHandler() {
+				Logger log = LoggerFactory.getLogger(getClass());
+
 				@Override
 				public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-					for (Callback callback : callbacks) {
-						if (callback instanceof TokenCallback)
-							return;
-					}
-					throw new UnsupportedCallbackException(callbacks[0]);
+					log.info("Handling callbacks.");
 				}
 			};
-			// TokenSAM tokenAuthModule = new TokenSAM();
 			tokenAuthModule.initialize(null, null, callbackHandler, null);
 			registerSAM(sce.getServletContext(), tokenAuthModule);
 		} catch (AuthException e) {

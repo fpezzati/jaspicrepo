@@ -20,13 +20,7 @@
 		<servlet-name>generatore-rest-servlet</servlet-name>
 		<url-pattern>/services/*</url-pattern>
 	</servlet-mapping>
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>jaspic.jwt</realm-name>
-	</login-config>
-	<!-- Does all the stuff below matters? -->
-	<!-- Maybe. Activating RESTEASY security does not resolv the issue. -->
-	<!-- Rolesallowed annotation is an EJB annotation and it is not enought I must specify web constraint. -->
+	<!-- The stuff below is really important -->
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>users</web-resource-name>
